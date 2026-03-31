@@ -87,6 +87,9 @@ body{background:var(--bg);color:var(--white);font-family:"Barlow",sans-serif;fon
   .site-header,.search-area,.chips-box,.content,.sync-bar{padding-left:20px;padding-right:20px}
   .chips-box{margin:0 20px}
 }
+
+.btn-del{background:transparent;border:1px solid #333;color:#444;font-family:"Barlow Condensed",sans-serif;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:7px 10px;cursor:pointer;transition:all .15s;margin-left:auto}
+.btn-del:hover{border-color:#FF0066;color:#FF0066}
 </style>
 </head>
 <body>
@@ -343,7 +346,8 @@ function render(){
     const mail = d.m ? '<a href="mailto:' + d.m + '" class="btn btn-p">Mail</a>' : "";
     const tel = d.t ? '<a href="tel:' + d.t + '" class="btn btn-g">' + d.t + '</a>' : "";
     const meta = (d.m || d.t) ? '<div class="card-meta">' + (d.m ? '<div class="meta-row"><span class="meta-lbl">Mail</span><span class="meta-val">' + d.m + '</span></div>' : "") + (d.t ? '<div class="meta-row"><span class="meta-lbl">Tel</span><span class="meta-val">' + d.t + '</span></div>' : "") + '</div>' : "";
-    return '<div class="card"><div class="card-top"><div><div class="card-name">' + d.n + '</div><div class="card-role">' + d.r + '</div></div><div class="dot ' + dc + '" title="' + dotTip(d.d) + '"></div></div>' + esp + tagHtml + meta + '<div class="card-actions">' + portfolio + mail + tel + '</div></div>';
+    var cardId = 'card-' + Math.random().toString(36).substr(2,9);
+    return '<div class="card" id="' + cardId + '"><div class="card-top"><div><div class="card-name">' + d.n + '</div><div class="card-role">' + d.r + '</div></div><div class="dot ' + dc + '" title="' + dotTip(d.d) + '"></div></div>' + esp + tagHtml + meta + '<div class="card-actions">' + portfolio + mail + tel + '<button class="btn btn-del" onclick="deleteArtist(\'' + d.n.replace(/\'/g,\'\\\'\')+\'\', \'' + d.r.replace(/\'/g,\'\\\'\')+\'\', document.getElementById(\'' + cardId + '\'))">✕ Eliminar</button></div></div>';
   }).join("");
 }
 
@@ -482,6 +486,27 @@ async function showMain(){
 window.onload = function(){
   if(sessionStorage.getItem("3dar_ok") === "1") showMain();
 };
+
+async function deleteArtist(nombre, rol, cardEl) {
+  if(!confirm('Eliminar a ' + nombre + ' de la base de datos?')) return;
+
+  // Remove from local DATA
+  var idx = DATA.findIndex(function(d){ return d.n === nombre && d.r === rol; });
+  if(idx !== -1) DATA.splice(idx, 1);
+
+  // Remove card from UI immediately
+  cardEl.style.opacity = '0.3';
+  cardEl.style.pointerEvents = 'none';
+  setTimeout(function(){ cardEl.remove(); }, 400);
+
+  // Delete from Google Sheets
+  try {
+    var url = SCRIPT_URL + '?action=delete&nombre=' + encodeURIComponent(nombre) + '&rol=' + encodeURIComponent(rol);
+    await fetch(url, { mode: 'no-cors' });
+  } catch(err) {
+    console.log('Delete request sent');
+  }
+}
 </script>
 </body>
 </html>
