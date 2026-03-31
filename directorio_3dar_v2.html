@@ -347,7 +347,10 @@ function render(){
     const tel = d.t ? '<a href="tel:' + d.t + '" class="btn btn-g">' + d.t + '</a>' : "";
     const meta = (d.m || d.t) ? '<div class="card-meta">' + (d.m ? '<div class="meta-row"><span class="meta-lbl">Mail</span><span class="meta-val">' + d.m + '</span></div>' : "") + (d.t ? '<div class="meta-row"><span class="meta-lbl">Tel</span><span class="meta-val">' + d.t + '</span></div>' : "") + '</div>' : "";
     var cardId = 'card-' + Math.random().toString(36).substr(2,9);
-    return '<div class="card" id="' + cardId + '"><div class="card-top"><div><div class="card-name">' + d.n + '</div><div class="card-role">' + d.r + '</div></div><div class="dot ' + dc + '" title="' + dotTip(d.d) + '"></div></div>' + esp + tagHtml + meta + '<div class="card-actions">' + portfolio + mail + tel + '<button class="btn btn-del" onclick="deleteArtist(\'' + d.n.replace(/\'/g,\'\\\'\')+\'\', \'' + d.r.replace(/\'/g,\'\\\'\')+\'\', document.getElementById(\'' + cardId + '\'))">✕ Eliminar</button></div></div>';
+    var safeName = d.n.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    var safeRol = d.r.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    var delBtn = '<button class="btn btn-del" onclick="deleteArtist(\''+safeName+'\',\''+safeRol+'\',document.getElementById(\''+cardId+'\'))">✕ Eliminar</button>';
+    return '<div class="card" id="'+cardId+'"><div class="card-top"><div><div class="card-name">'+d.n+'</div><div class="card-role">'+d.r+'</div></div><div class="dot '+dc+'" title="'+dotTip(d.d)+'"></div></div>'+esp+tagHtml+meta+'<div class="card-actions">'+portfolio+mail+tel+delBtn+'</div></div>';
   }).join("");
 }
 
