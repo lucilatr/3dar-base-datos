@@ -65,8 +65,8 @@ header {
 .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); font-family: 'Barlow Condensed', sans-serif; }
 .leg-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
-.gantt-wrap { overflow: auto; padding-bottom: 32px; max-height: calc(100vh - 140px); }
-table.gantt { border-collapse: collapse; width: 100%; min-width: 1020px; }
+.gantt-wrap { overflow: auto; padding-bottom: 32px; max-height: calc(100vh - 160px); }
+table.gantt { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1020px; }
 .gantt th, .gantt td { border: 1px solid var(--border); }
 
 .gantt thead th {
@@ -78,11 +78,15 @@ table.gantt { border-collapse: collapse; width: 100%; min-width: 1020px; }
 .gantt thead th.wk { color: var(--text-dim); }
 .gantt thead th.day { font-size: 10px; color: #555; }
 .gantt thead th.day.we { color: #2a2a2a; }
-.gantt thead th.name-h { text-align: left; padding: 5px 10px; width: 132px; min-width: 132px; position: sticky; left: 0; z-index: 6; }
+.gantt thead th.name-h { text-align: left; padding: 5px 10px; width: 132px; min-width: 132px; }
 
 .pri-sep td {
   font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
   letter-spacing: .14em; text-transform: uppercase; padding: 4px 10px;
+}
+.gantt th.name-h {
+  position: sticky; left: 0; z-index: 6;
+  box-shadow: 2px 0 4px rgba(0,0,0,.4);
 }
 .stage-sep td {
   font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
@@ -95,6 +99,7 @@ table.gantt { border-collapse: collapse; width: 100%; min-width: 1020px; }
   font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600;
   color: var(--text); background: var(--surface);
   position: sticky; left: 0; z-index: 4;
+  box-shadow: 2px 0 4px rgba(0,0,0,.4);
 }
 .day-cell { width: 26px; min-width: 26px; padding: 0; position: relative; vertical-align: middle; height: 32px; }
 .day-cell.we { background: rgba(255,255,255,.015); }
@@ -157,6 +162,7 @@ table.gantt { border-collapse: collapse; width: 100%; min-width: 1020px; }
   color: transparent; background: var(--surface);
   border-left-width: 3px; border-left-style: solid;
   position: sticky; left: 0; z-index: 4;
+  box-shadow: 2px 0 4px rgba(0,0,0,.4);
 }
 
 @media print {
