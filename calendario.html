@@ -65,7 +65,7 @@ header {
 .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-dim); font-family: 'Barlow Condensed', sans-serif; }
 .leg-sq { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
 
-.gantt-wrap { overflow: auto; padding-bottom: 32px; max-height: calc(100vh - 160px); }
+.gantt-wrap { overflow: auto; padding-bottom: 32px; max-height: calc(100vh - 130px); position: relative; }
 table.gantt { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1020px; }
 .gantt th, .gantt td { border: 1px solid var(--border); }
 
@@ -75,6 +75,8 @@ table.gantt { border-collapse: separate; border-spacing: 0; width: 100%; min-wid
   text-align: center; padding: 5px 3px; background: var(--surface); white-space: nowrap;
   position: sticky; top: 0; z-index: 5;
 }
+.gantt thead tr:nth-child(1) th { top: 0; }
+.gantt thead tr:nth-child(2) th { top: 28px; }
 .gantt thead th.wk { color: var(--text-dim); }
 .gantt thead th.day { font-size: 10px; color: #555; }
 .gantt thead th.day.we { color: #2a2a2a; }
@@ -520,9 +522,8 @@ function renderGantt() {
     const tr = body.insertRow(); tr.className = 'char-row'; tr.dataset.prow = char.p; tr.dataset.ci = ci;
     if (!activeFilters.has(char.p)) tr.classList.add('hidden-row');
 
-    // Name cell: rowspan=2 if sub-row exists
+    // Name cell: always single row
     const nc = tr.insertCell(); nc.className = 'name-cell'; nc.textContent = char.name;
-    if (needsSubRow) { nc.rowSpan = 2; nc.style.verticalAlign = 'middle'; }
 
     for (let abs = 0; abs < WEEKS*7; abs++) {
       const td = tr.insertCell();
@@ -547,7 +548,9 @@ function renderGantt() {
     if (needsSubRow) {
       const tr2 = body.insertRow(); tr2.className = 'char-row'; tr2.dataset.prow = char.p;
       if (!activeFilters.has(char.p)) tr2.classList.add('hidden-row');
-      // No name cell here — covered by rowspan above
+      // Empty name cell for sub-row
+      const nc2 = tr2.insertCell(); nc2.className = 'name-cell-sub';
+      nc2.style.borderLeftColor = PCOLORS[char.p].border.replace('.3)', '.8)');
 
       for (let abs = 0; abs < WEEKS*7; abs++) {
         const td = tr2.insertCell();
@@ -562,7 +565,7 @@ function renderGantt() {
       // Place second task per week in sub-row
       char.tasks.forEach((task, ti) => {
         const tasksInWeek = tasksByWeek[task.w];
-        if (tasksInWeek[1] === ti) placeBar(tr2, ci, ti, task, false, 0);
+        if (tasksInWeek[1] === ti) placeBar(tr2, ci, ti, task, false, 1);
       });
     }
   });
@@ -801,18 +804,16 @@ function handleDrop(e, ci, targetAbs, toSubRow) {
   const {w: tgtW, d: tgtD} = absToWD(targetAbs);
   if (isWE(getDate(tgtW-1, tgtD))) { showToast('Cannot drop on weekend', true); return; }
 
-  // Drop from legend — create new task
+  // Drop from legend — create new task, always Mon–Fri (d0:0, d1:4)
   if (data.fromLegend) {
     const proc = data.proc;
+    // Remove any existing task of same proc in this week
+    chars[ci].tasks = chars[ci].tasks.filter(t => !(t.w === tgtW && t.proc === proc));
+    // Cap at 2 tasks per week — if already 2, overwrite the last one
     const existing = chars[ci].tasks.filter(t => t.w === tgtW);
-    if (existing.length === 0 || (existing.length === 1 && existing[0].proc !== proc)) {
-      // Add as new task (second if first row occupied, first if empty)
-      chars[ci].tasks = chars[ci].tasks.filter(t => !(t.w === tgtW && t.proc === proc));
-      chars[ci].tasks.push({ proc, w: tgtW, d0: 0, d1: 4 });
-    } else if (existing.length >= 2) {
-      // Already 2 tasks — overwrite the second
-      const secondIdx = chars[ci].tasks.indexOf(existing[1]);
-      chars[ci].tasks[secondIdx] = { proc, w: tgtW, d0: 0, d1: 4 };
+    if (existing.length >= 2) {
+      const lastIdx = chars[ci].tasks.lastIndexOf(existing[existing.length - 1]);
+      chars[ci].tasks[lastIdx] = { proc, w: tgtW, d0: 0, d1: 4 };
     } else {
       chars[ci].tasks.push({ proc, w: tgtW, d0: 0, d1: 4 });
     }
